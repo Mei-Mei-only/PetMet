@@ -32,7 +32,6 @@ import pytz
 import calendar
 
 import json
-import torchvision.models as models
 
 
 
