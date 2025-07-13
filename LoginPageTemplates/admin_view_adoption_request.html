@@ -1,0 +1,585 @@
+{% extends 'base4.html' %}
+{% block content %}
+<div class="request-detail-page">
+    <div class="container">
+        <!-- Header -->
+        <div class="page-header">
+            <div class="header-content">
+                <h1>Adoption Request Details</h1>
+                <p>Request for {{ request.pet.name }}</p>
+            </div>
+            <div class="status-badge status-{{ request.adoption_request_status }}">
+                {{ request.adoption_request_status|title }}
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content-grid">
+            <!-- Pet Information Card -->
+            <div class="pet-info-card">
+                <div class="card-header">
+                    <h2>🐾 Pet Information</h2>
+                </div>
+                
+                <div class="pet-content">
+                    <div class="pet-image-section">
+                        {% if request.pet.img %}
+                            <img src="{{ request.pet.img.url }}" alt="{{ request.pet.name }}" class="pet-image" />
+                        {% else %}
+                            <div class="image-placeholder">
+                                <span class="placeholder-icon">🐾</span>
+                                <span class="placeholder-text">No image available</span>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="pet-name-info">
+                            <h3 class="pet-name">{{ request.pet.name }}</h3>
+                            <span class="pet-type">{{ request.pet.animal_type }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Adopter Information Card -->
+            <div class="adopter-info-card">
+                <div class="card-header">
+                    <h2>👤 Adopter Information</h2>
+                </div>
+                
+                <div class="adopter-content">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="label">Full Name</span>
+                            <span class="value">{{ user_first_name }} {{ user_last_name }}</span>
+                        </div>
+                        
+                        <div class="info-item">
+                            <span class="label">Contact Number</span>
+                            <span class="value">{{ request.contact_number }}</span>
+                        </div>
+                        
+                        <div class="info-item span-full">
+                            <span class="label">Address</span>
+                            <span class="value">{{ request.address }}</span>
+                        </div>
+                        
+                        <div class="info-item">
+                            <span class="label">Adopter Type</span>
+                            <span class="value">{{ request.adopter_type }}</span>
+                        </div>
+                        
+                        <div class="info-item">
+                            <span class="label">Living Situation</span>
+                            <span class="value">{{ request.living_situation }}</span>
+                        </div>
+                        
+                        <div class="info-item">
+                            <span class="label">Previous Experience</span>
+                            <span class="value">{{ request.previous_pet_experience }}</span>
+                        </div>
+                        
+                        <div class="info-item">
+                            <span class="label">Owns Other Pets</span>
+                            <span class="value">{{ request.owns_other_pets }}</span>
+                        </div>
+                        
+                        <div class="info-item">
+                            <span class="label">ID Type</span>
+                            <span class="value">{{ request.id_type }}</span>
+                        </div>
+                        
+                        <div class="info-item">
+                            <span class="label">ID Number</span>
+                            <span class="value">{{ request.id_number }}</span>
+                        </div>
+                        
+                        <div class="info-item span-full">
+                            <span class="label">Facebook Profile</span>
+                            <span class="value">
+                                {% if request.facebook_profile_link %}
+                                    <a href="{{ request.facebook_profile_link }}" target="_blank" class="social-link">
+                                        View Profile
+                                    </a>
+                                {% else %}
+                                    <span class="not-provided">Not provided</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                        
+                        <div class="info-item">
+                            <span class="label">Request Date</span>
+                            <span class="value">{{ request.request_date|date:"M j, Y" }}</span>
+                        </div>
+                        
+                        {% if request.adoption_request_status == 'approved' %}
+                        <div class="info-item">
+                            <span class="label">Approved On</span>
+                            <span class="value">{{ request.approval_date_time|date:"M j, Y, g:i a" }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Section -->
+        <div class="action-section">
+            {% if request.adoption_request_status == 'pending' %}
+            <div class="action-card">
+                <div class="action-header">
+                    <h3>⏳ Pending Review</h3>
+                    <p>This request is waiting for initial review</p>
+                </div>
+                <form action="{% url 'update_status' request.id 'review' %}" method="post" class="action-form">
+                    {% csrf_token %}
+                    <button type="submit" class="btn review-btn" onclick="return confirm('Mark this request for review?')">
+                        🔍 Mark for Review
+                    </button>
+                </form>
+            </div>
+            {% elif request.adoption_request_status == 'review' %}
+            <div class="action-card">
+                <div class="action-header">
+                    <h3>🔍 Under Review</h3>
+                    <p>Make a decision on this adoption request</p>
+                </div>
+                <div class="action-buttons">
+                    <form action="{% url 'update_status' request.id 'approved' %}" method="post" class="action-form">
+                        {% csrf_token %}
+                        <button type="submit" class="btn approve-btn" onclick="return confirm('Are you sure you want to approve this adoption request?')">
+                             Approve Request
+                        </button>
+                    </form>
+                    <a href="{% url 'update_status' request.id 'rejected' %}" 
+                       class="btn reject-btn" 
+                       onclick="return confirm('Are you sure you want to reject this adoption request?')">
+                         Reject Request
+                    </a>
+                </div>
+            </div>
+            {% elif request.adoption_request_status == 'approved' %}
+            <div class="action-card success-card">
+                <div class="action-header">
+                    <h3> Request Approved</h3>
+                    <p>This adoption request has been approved</p>
+                </div>
+            </div>
+            {% elif request.adoption_request_status == 'rejected' %}
+            <div class="action-card danger-card">
+                <div class="action-header">
+                    <h3> Request Rejected</h3>
+                    <p>This adoption request has been rejected</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Back Button -->
+        <div class="back-section">
+            <a href="{% url 'admin_adoption_request' %}" class="back-btn">
+                ← Back to Requests
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .request-detail-page {
+        background: #f8fafc;
+        min-height: 100vh;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    .container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 32px 20px;
+    }
+
+    /* Header */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 32px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .header-content h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1f2937;
+        margin: 0 0 4px 0;
+    }
+
+    .header-content p {
+        font-size: 16px;
+        color: #6b7280;
+        margin: 0;
+    }
+
+    .status-badge {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-badge.status-pending {
+        background: #fef3c7;
+        color: #d97706;
+        border: 1px solid #f59e0b;
+    }
+
+    .status-badge.status-review {
+        background: #dbeafe;
+        color: #2563eb;
+        border: 1px solid #3b82f6;
+    }
+
+    .status-badge.status-approved {
+        background: #d1fae5;
+        color: #065f46;
+        border: 1px solid #10b981;
+    }
+
+    .status-badge.status-rejected {
+        background: #fee2e2;
+        color: #dc2626;
+        border: 1px solid #ef4444;
+    }
+
+    /* Content Grid */
+    .content-grid {
+        display: grid;
+        grid-template-columns: 350px 1fr;
+        gap: 24px;
+        margin-bottom: 32px;
+    }
+
+    /* Cards */
+    .pet-info-card,
+    .adopter-info-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .card-header {
+        background: #f9fafb;
+        padding: 20px 24px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .card-header h2 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1f2937;
+        margin: 0;
+    }
+
+    /* Pet Info Card */
+    .pet-info-card {
+        position: relative;
+        overflow: visible;
+    }
+
+    .pet-content {
+        padding: 24px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .pet-image {
+        margin-bottom: 20px;
+        text-align: center;
+        position: relative;
+    }
+
+    .pet-image img {
+        max-width: 100%;
+        max-height: 200px;
+        border-radius: 8px;
+        object-fit: cover;
+        display: block;
+        margin: 0 auto;
+    }
+
+    .image-placeholder {
+        background: #f3f4f6;
+        border: 2px dashed #d1d5db;
+        border-radius: 8px;
+        padding: 40px 20px;
+        text-align: center;
+        color: #6b7280;
+    }
+
+    .placeholder-icon {
+        display: block;
+        font-size: 32px;
+        margin-bottom: 8px;
+        opacity: 0.5;
+    }
+
+    .placeholder-text {
+        font-size: 14px;
+    }
+
+    .pet-details .pet-name-display {
+        text-align: center;
+        padding: 16px;
+        background: #f8fafc;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+        margin-top: 0;
+        position: static;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .pet-name-display .pet-name {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1f2937;
+        margin: 0 0 8px 0;
+        display: block;
+    }
+
+    .pet-name-display .pet-type {
+        font-size: 14px;
+        color: #6b7280;
+        font-weight: 500;
+        text-transform: capitalize;
+        display: block;
+    }
+
+    .detail-row .label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .detail-row .value {
+        font-size: 14px;
+        color: #1f2937;
+        font-weight: 500;
+    }
+
+    /* Adopter Info Card */
+    .adopter-content {
+        padding: 24px;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .info-item.span-full {
+        grid-column: 1 / -1;
+    }
+
+    .info-item .label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .info-item .value {
+        font-size: 14px;
+        color: #1f2937;
+        font-weight: 500;
+        line-height: 1.4;
+    }
+
+    .social-link {
+        color: #3b82f6;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .social-link:hover {
+        color: #2563eb;
+        text-decoration: underline;
+    }
+
+    .not-provided {
+        color: #9ca3af;
+        font-style: italic;
+    }
+
+    /* Action Section */
+    .action-section {
+        margin-bottom: 32px;
+    }
+
+    .action-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .action-card.success-card {
+        background: #f0fdf4;
+        border-color: #22c55e;
+    }
+
+    .action-card.danger-card {
+        background: #fef2f2;
+        border-color: #ef4444;
+    }
+
+    .action-header {
+        margin-bottom: 20px;
+    }
+
+    .action-header h3 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1f2937;
+        margin: 0 0 4px 0;
+    }
+
+    .action-header p {
+        font-size: 14px;
+        color: #6b7280;
+        margin: 0;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .action-form {
+        margin: 0;
+    }
+
+    /* Buttons */
+    .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        min-width: 140px;
+    }
+
+    .review-btn {
+        background: #f59e0b;
+        color: white;
+    }
+
+    .review-btn:hover {
+        background: #d97706;
+    }
+
+    .approve-btn {
+        background: #10b981;
+        color: white;
+    }
+
+    .approve-btn:hover {
+        background: #059669;
+    }
+
+    .reject-btn {
+        background: #ef4444;
+        color: white;
+    }
+
+    .reject-btn:hover {
+        background: #dc2626;
+        text-decoration: none;
+    }
+
+    .back-btn {
+        background: #f3f4f6;
+        color: #374151;
+        border: 1px solid #d1d5db;
+    }
+
+    .back-btn:hover {
+        background: #e5e7eb;
+        color: #1f2937;
+        text-decoration: none;
+    }
+
+    /* Back Section */
+    .back-section {
+        text-align: center;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .container {
+            padding: 20px 16px;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: stretch;
+            text-align: center;
+        }
+
+        .header-content h1 {
+            font-size: 24px;
+        }
+
+        .content-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .header-content h1 {
+            font-size: 20px;
+        }
+
+        .card-header,
+        .pet-content,
+        .adopter-content,
+        .action-card {
+            padding: 16px;
+        }
+    }
+</style>
+{% endblock %}
