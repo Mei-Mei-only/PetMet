@@ -11,3 +11,4 @@ django-cors-headers
 mysqlclient
 numpy
 requests==2.31.0
+Pillow
