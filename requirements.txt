@@ -9,3 +9,4 @@ whitenoise[brotli]
 gunicorn
 django-cors-headers
 mysqlclient
+numpy
