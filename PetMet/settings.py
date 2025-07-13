@@ -20,7 +20,7 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-ALLOWED_HOSTS = ['10.0.2.2', 'localhost', '127.0.0.1', '.vercel.app']
+ALLOWED_HOSTS = ['10.0.2.2', 'localhost', '127.0.0.1', '.vercel.app', 'petmet-n5ae.onrender.com']
 
 
 
