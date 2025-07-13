@@ -8,3 +8,4 @@ dj-database-url
 whitenoise[brotli]
 gunicorn
 django-cors-headers
+mysqlclient
