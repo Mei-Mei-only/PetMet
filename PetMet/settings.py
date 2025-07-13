@@ -120,7 +120,12 @@ SESSION_COOKIE_HTTPONLY = True
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config( default='postgresql://postgres:postgres@localhost:5432/mysite',        conn_max_age=600    )}
+    'default': dj_database_url.config(
+        default='sqlite:///db.sqlite3',
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
+}
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
