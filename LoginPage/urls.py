@@ -58,4 +58,5 @@ urlpatterns = [
     path('post_adoption/<int:id>/delete/', views.post_adoption_delete, name='post_adoption_delete'),
     path('terms/', views.terms_conditions_view, name='terms_conditions'),
     path('mark-notifications-read/', views.mark_notifications_read, name='mark_notifications_read'),
+    path('pet_adoption_terms_and_conditions/', views.pet_adoption_terms_and_conditions, name='pet_adoption_terms_and_conditions'),
 ]
