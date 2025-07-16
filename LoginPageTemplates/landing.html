@@ -976,17 +976,18 @@
                         <p class="hero-description">
                             Using advanced Natural Language Processing and AI-powered matching to connect loving families with their ideal pet companions.
                         </p>
-                        <div class="hero-buttons">
-                            <a href="#services" class="btn-hero-primary">
-                                <i class="fas fa-paw"></i> Get Started
-                            </a>
-                            <a href="#about" class="btn-hero-secondary">
-                                <i class="fas fa-info-circle"></i> Learn More
-                            </a>
-                            <button id="installButton" class="btn-hero-secondary" style="display: none;">
+                        <!-- Replace the existing install button in your hero-buttons section -->
+<div class="hero-buttons">
+    <a href="#services" class="btn-hero-primary">
+        <i class="fas fa-paw"></i> Get Started
+    </a>
+    <a href="#about" class="btn-hero-secondary">
+        <i class="fas fa-info-circle"></i> Learn More
+    </a>
+    <button id="installButton" class="btn-hero-secondary" style="display: none;">
         <i class="fas fa-download"></i> Install App
     </button>
-                        </div>
+</div>
                     </div>
                 </div>
                 <div class="col-lg-6">
@@ -1358,39 +1359,85 @@
                 this.reset();
             }
         });
-        // Handle the install prompt
+        // PWA Install functionality
 let deferredPrompt;
 const installButton = document.getElementById('installButton');
 
+// Debug function to check PWA eligibility
+function checkPWAEligibility() {
+    console.log('Checking PWA eligibility...');
+    console.log('Is HTTPS:', location.protocol === 'https:' || location.hostname === 'localhost');
+    console.log('Service Worker supported:', 'serviceWorker' in navigator);
+    console.log('Current URL:', window.location.href);
+    console.log('User Agent:', navigator.userAgent);
+}
+
+// Check eligibility on load
+checkPWAEligibility();
+
+// Listen for the beforeinstallprompt event
 window.addEventListener('beforeinstallprompt', (e) => {
+    console.log('beforeinstallprompt event fired');
     // Prevent the mini-infobar from appearing on mobile
     e.preventDefault();
     // Stash the event so it can be triggered later
     deferredPrompt = e;
-    // Update UI to notify the user they can install the PWA
+    // Show the install button
     installButton.style.display = 'inline-flex';
-    
-    installButton.addEventListener('click', () => {
-        // Show the install prompt
-        deferredPrompt.prompt();
-        // Wait for the user to respond to the prompt
-        deferredPrompt.userChoice.then((choiceResult) => {
-            if (choiceResult.outcome === 'accepted') {
-                console.log('User accepted the install prompt');
-            } else {
-                console.log('User dismissed the install prompt');
-            }
-            deferredPrompt = null;
-        });
-    });
+    console.log('Install button shown');
 });
 
+// Handle install button click
+installButton.addEventListener('click', async () => {
+    console.log('Install button clicked');
+    if (!deferredPrompt) {
+        console.log('No deferred prompt available');
+        return;
+    }
+    
+    // Show the install prompt
+    deferredPrompt.prompt();
+    
+    // Wait for the user to respond to the prompt
+    const { outcome } = await deferredPrompt.userChoice;
+    
+    if (outcome === 'accepted') {
+        console.log('User accepted the install prompt');
+    } else {
+        console.log('User dismissed the install prompt');
+    }
+    
+    // Clear the deferredPrompt
+    deferredPrompt = null;
+    installButton.style.display = 'none';
+});
+
+// Handle successful installation
 window.addEventListener('appinstalled', () => {
+    console.log('PWA was installed');
     // Hide the install button
     installButton.style.display = 'none';
-    // Clear the deferredPrompt so it can be garbage collected
+    // Clear the deferredPrompt
     deferredPrompt = null;
 });
+
+// Check if already installed (for debugging)
+if (window.matchMedia('(display-mode: standalone)').matches) {
+    console.log('PWA is already installed');
+    installButton.style.display = 'none';
+}
+
+// For testing - show button after 3 seconds if not shown naturally
+setTimeout(() => {
+    if (!deferredPrompt && installButton.style.display === 'none') {
+        console.log('No install prompt detected after 3 seconds');
+        console.log('This might be because:');
+        console.log('1. PWA is already installed');
+        console.log('2. Browser doesn\'t support installation');
+        console.log('3. Site doesn\'t meet PWA requirements');
+        console.log('4. User has dismissed the prompt before');
+    }
+}, 3000);
     </script>
 </body>
 </html>
