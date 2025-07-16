@@ -59,4 +59,5 @@ urlpatterns = [
     path('terms/', views.terms_conditions_view, name='terms_conditions'),
     path('mark-notifications-read/', views.mark_notifications_read, name='mark_notifications_read'),
     path('pet_adoption_terms_and_conditions/', views.pet_adoption_terms_and_conditions, name='pet_adoption_terms_and_conditions'),
+    path('track-pwa-install/', views.track_pwa_install, name='track_pwa_install'),
 ]
