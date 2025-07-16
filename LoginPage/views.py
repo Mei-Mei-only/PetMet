@@ -1368,6 +1368,6 @@ def get_pwa_stats(request):
     return JsonResponse({
         'total_installs': total_installs,
         'last_week_installs': PWAInstallation.objects.filter(
-            installed_at__gte=timezone.now() - timedelta(days=7)
+            installed_at__gte=timezone.now() - timedelta(days=7))
         .count()
     })
