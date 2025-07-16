@@ -1362,3 +1362,12 @@ def track_pwa_install(request):
         return JsonResponse({'status': 'success'})
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
+def get_pwa_stats(request):
+    total_installs = PWAInstallation.objects.count()
+    return JsonResponse({
+        'total_installs': total_installs,
+        'last_week_installs': PWAInstallation.objects.filter(
+            installed_at__gte=timezone.now() - timedelta(days=7)
+        .count()
+    })
