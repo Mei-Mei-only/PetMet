@@ -1,0 +1,51 @@
+{
+  "name": "PetMet",
+  "short_name": "PetMet",
+  "description": "Find Your Perfect Pet Match",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ff6b6b",
+  "icons": [
+    {
+      "src": "{% static 'PetMetLogo.jpg' %}",
+      "sizes": "72x72",
+      "type": "image/jpg"
+    },
+    {
+      "src": "{% static 'PetMetLogo.jpg' %}",
+      "sizes": "96x96",
+      "type": "image/jpg"
+    },
+    {
+      "src": "{% static 'PetMetLogo.jpg' %}",
+      "sizes": "128x128",
+      "type": "image/jpg"
+    },
+    {
+      "src": "{% static 'PetMetLogo.jpg' %}",
+      "sizes": "144x144",
+      "type": "image/jpg"
+    },
+    {
+      "src": "{% static 'PetMetLogo.jpg' %}",
+      "sizes": "152x152",
+      "type": "image/jpg"
+    },
+    {
+      "src": "{% static 'PetMetLogo.jpg' %}",
+      "sizes": "192x192",
+      "type": "image/jpg"
+    },
+    {
+      "src": "{% static 'PetMetLogo.jpg' %}",
+      "sizes": "384x384",
+      "type": "image/jpg"
+    },
+    {
+      "src": "{% static 'PetMetLogo.jpg' %}",
+      "sizes": "512x512",
+      "type": "image/jpg"
+    }
+  ]
+}
