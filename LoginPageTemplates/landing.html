@@ -8,7 +8,12 @@
     <title>PetMet - Find Your Perfect Pet Match</title>
     <meta name="description" content="PetMet helps you find your perfect pet match using AI and natural language processing. Adopt from shelters, rescuers, and private owners.">
     <meta name="author" content="Team Skylark">
-    
+
+    <!-- Add these meta tags for PWA -->
+    <meta name="theme-color" content="#ff6b6b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="{% static 'manifest.json' %}">
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/css/bootstrap.min.css">
     <!-- Font Awesome -->
@@ -970,14 +975,17 @@
                         <p class="hero-description">
                             Using advanced Natural Language Processing and AI-powered matching to connect loving families with their ideal pet companions.
                         </p>
-                        <div class="hero-buttons">
-                            <a href="#services" class="btn-hero-primary">
-                                <i class="fas fa-paw"></i> Get Started
-                            </a>
-                            <a href="#about" class="btn-hero-secondary">
-                                <i class="fas fa-info-circle"></i> Learn More
-                            </a>
-                        </div>
+                       <div class="hero-buttons">
+    <a href="#services" class="btn-hero-primary">
+        <i class="fas fa-paw"></i> Get Started
+    </a>
+    <a href="#about" class="btn-hero-secondary">
+        <i class="fas fa-info-circle"></i> Learn More
+    </a>
+    <a href="#" id="installBtn" class="btn-hero-secondary">
+        <i class="fas fa-download"></i> Install App
+    </a>
+</div>
                     </div>
                 </div>
                 <div class="col-lg-6">
@@ -1021,6 +1029,13 @@
                     <div class="stat-number">98%</div>
                     <div class="stat-label">Success Rate</div>
                 </div>
+                <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-download"></i>
+        </div>
+        <div class="stat-number" id="pwa-stat">0+</div>
+        <div class="stat-label">App Downloads</div>
+    </div>
             </div>
         </div>
     </div>
@@ -1267,6 +1282,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.1/umd/popper.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/js/bootstrap.min.js"></script>
+
+    <!-- PWA Scripts -->
+<script src="{% static 'pwa.js' %}"></script>
     
     <script>
         // Smooth scrolling
@@ -1340,6 +1358,97 @@
                 this.reset();
             }
         });
+
+       // PWA Installation Logic
+let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  // Prevent the mini-infobar from appearing on mobile
+  e.preventDefault();
+  // Stash the event so it can be triggered later
+  deferredPrompt = e;
+  // Show the install button
+  const installBtn = document.getElementById('installBtn');
+  if (installBtn) {
+    installBtn.style.display = 'block';
+  }
+});
+
+// Install button click handler
+document.getElementById('installBtn')?.addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  
+  // Show the install prompt
+  deferredPrompt.prompt();
+  
+  // Wait for the user to respond to the prompt
+  const { outcome } = await deferredPrompt.userChoice;
+  
+  if (outcome === 'accepted') {
+    console.log('User accepted the install prompt');
+  } else {
+    console.log('User dismissed the install prompt');
+  }
+  
+  // Clear the saved prompt since it can't be used again
+  deferredPrompt = null;
+  
+  // Hide the install button
+  const installBtn = document.getElementById('installBtn');
+  if (installBtn) {
+    installBtn.style.display = 'none';
+  }
+});
+
+// Track PWA installations (existing code)
+window.addEventListener('appinstalled', (evt) => {
+  // Send installation event to server
+  fetch('/track-pwa-install/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookie('csrftoken'),
+    },
+    body: JSON.stringify({type: 'install'})
+  }).then(response => {
+    console.log('Installation tracked');
+  });
+  
+  // Hide the install button after installation
+  const installBtn = document.getElementById('installBtn');
+  if (installBtn) {
+    installBtn.style.display = 'none';
+  }
+});
+
+// Service Worker registration (existing code)
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('{% static "service-worker.js" %}')
+      .then(registration => {
+        console.log('ServiceWorker registration successful');
+      })
+      .catch(err => {
+        console.log('ServiceWorker registration failed: ', err);
+      });
+  });
+}
+
+// Helper function to get CSRF token (existing code)
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
     </script>
 </body>
 </html>
