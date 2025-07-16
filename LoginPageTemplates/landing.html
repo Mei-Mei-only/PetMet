@@ -13,7 +13,7 @@
     <meta name="theme-color" content="#ff6b6b">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="manifest" href="{% static 'manifest.json' %}">
+    <link rel="manifest" href="{% static '/static/manifest.json' %}">
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/css/bootstrap.min.css">
     <!-- Font Awesome -->
@@ -1424,7 +1424,7 @@ window.addEventListener('appinstalled', (evt) => {
 // Service Worker registration (existing code)
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('{% static "service-worker.js" %}')
+    navigator.serviceWorker.register('{% static "/static/service-worker.js" %}')
       .then(registration => {
         console.log('ServiceWorker registration successful');
       })
