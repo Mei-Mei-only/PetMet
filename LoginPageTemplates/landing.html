@@ -1360,85 +1360,82 @@
         });
 
         // PWA Installation Button Logic
-    let deferredPrompt;
-    const installBtn = document.getElementById('installBtn');
+let deferredPrompt;
+const installBtn = document.getElementById('installBtn');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    // Prevent the mini-infobar from appearing on mobile
+    e.preventDefault();
+    // Stash the event so it can be triggered later
+    deferredPrompt = e;
+    // Show the install button
+    installBtn.style.display = 'inline-flex';
     
-    window.addEventListener('beforeinstallprompt', (e) => {
-        // Prevent the mini-infobar from appearing on mobile
-        e.preventDefault();
-        // Stash the event so it can be triggered later
-        deferredPrompt = e;
-        // Show the install button
-        installBtn.style.display = 'inline-flex';
-        
-        // Show download stats if available
-        fetchPWAInstallStats();
-    });
-    
-    installBtn.addEventListener('click', async () => {
-        if (deferredPrompt) {
-            // Show the install prompt
-            deferredPrompt.prompt();
-            // Wait for the user to respond to the prompt
-            const { outcome } = await deferredPrompt.userChoice;
-            // Optionally, send analytics about the user's choice
-            console.log(`User response to the install prompt: ${outcome}`);
-            // We've used the prompt, and can't use it again, throw it away
-            deferredPrompt = null;
-            // Hide the install button
-            installBtn.style.display = 'none';
-        }
-    });
-    
-    // Track PWA installations
-    window.addEventListener('appinstalled', (evt) => {
-        console.log('PWA was installed');
-        fetch('/track-pwa-install/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken'),
-            },
-            body: JSON.stringify({type: 'install'})
-        }).then(response => {
-            console.log('Installation tracked');
-        });
-    });
-    
-    // Function to fetch and display PWA installation stats
-    async function fetchPWAInstallStats() {
-        try {
-            const response = await fetch('/get-pwa-stats/');
-            const data = await response.json();
-            
-            // You can display this data somewhere, like in your stats section
-            console.log('PWA Installations:', data.total_installs);
-            
-            // Example: Update a stats element if you want to show the count
-            // const pwaStatElement = document.getElementById('pwa-stat');
-            // if (pwaStatElement) {
-            //     pwaStatElement.textContent = data.total_installs + '+';
-            // }
-        } catch (error) {
-            console.error('Error fetching PWA stats:', error);
-        }
+    // Show download stats if available
+    fetchPWAInstallStats();
+});
+
+installBtn.addEventListener('click', async () => {
+    if (deferredPrompt) {
+        // Show the install prompt
+        deferredPrompt.prompt();
+        // Wait for the user to respond to the prompt
+        const { outcome } = await deferredPrompt.userChoice;
+        // Optionally, send analytics about the user's choice
+        console.log(`User response to the install prompt: ${outcome}`);
+        // We've used the prompt, and can't use it again, throw it away
+        deferredPrompt = null;
+        // Hide the install button
+        installBtn.style.display = 'none';
     }
-    
-    // Helper function to get CSRF token
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
+});
+
+// Track PWA installations
+window.addEventListener('appinstalled', (evt) => {
+    console.log('PWA was installed');
+    fetch('/track-pwa-install/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),
+        },
+        body: JSON.stringify({type: 'install'})
+    }).then(response => {
+        console.log('Installation tracked');
+    });
+});
+
+// Function to fetch and display PWA installation stats
+async function fetchPWAInstallStats() {
+    try {
+        const response = await fetch('/get-pwa-stats/');
+        const data = await response.json();
+        
+        // Update the PWA stats counter
+        const pwaStatElement = document.getElementById('pwa-stat');
+        if (pwaStatElement) {
+            pwaStatElement.textContent = data.total_installs + '+';
+        }
+    } catch (error) {
+        console.error('Error fetching PWA stats:', error);
+    }
+}
+
+// Helper function to get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
             }
         }
-        return cookieValue;
     }
+    return cookieValue;
+}
     </script>
 </body>
 </html>
