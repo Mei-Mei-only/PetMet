@@ -234,3 +234,15 @@ class PageView(models.Model):
 
     class Meta:
         verbose_name_plural = "Page Views"
+
+class PWAInstallation(models.Model):
+    installed_at = models.DateTimeField(auto_now_add=True)
+    device_info = models.CharField(max_length=255, blank=True, null=True)
+    source = models.CharField(max_length=100, blank=True, null=True)
+
+    class Meta:
+        verbose_name = "PWA Installation"
+        verbose_name_plural = "PWA Installations"
+
+    def __str__(self):
+        return f"Installation at {self.installed_at}"
