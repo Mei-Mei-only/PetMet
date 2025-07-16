@@ -13,3 +13,4 @@ numpy
 requests==2.31.0
 Pillow
 beautifulsoup4==4.12.2
+django-user-agents==1.4.0
