@@ -5,12 +5,6 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- Add to the head section -->
-<link rel="manifest" href="{% static 'manifest.json' %}">
-<meta name="theme-color" content="#ff6b6b">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="apple-touch-icon" href="{% static 'icons/icon-192x192.png' %}">
     <title>PetMet - Find Your Perfect Pet Match</title>
     <meta name="description" content="PetMet helps you find your perfect pet match using AI and natural language processing. Adopt from shelters, rescuers, and private owners.">
     <meta name="author" content="Team Skylark">
@@ -976,18 +970,14 @@
                         <p class="hero-description">
                             Using advanced Natural Language Processing and AI-powered matching to connect loving families with their ideal pet companions.
                         </p>
-                        <!-- Replace the existing install button in your hero-buttons section -->
-<div class="hero-buttons">
-    <a href="#services" class="btn-hero-primary">
-        <i class="fas fa-paw"></i> Get Started
-    </a>
-    <a href="#about" class="btn-hero-secondary">
-        <i class="fas fa-info-circle"></i> Learn More
-    </a>
-    <button id="installButton" class="btn-hero-secondary" style="display: none;">
-        <i class="fas fa-download"></i> Install App
-    </button>
-</div>
+                        <div class="hero-buttons">
+                            <a href="#services" class="btn-hero-primary">
+                                <i class="fas fa-paw"></i> Get Started
+                            </a>
+                            <a href="#about" class="btn-hero-secondary">
+                                <i class="fas fa-info-circle"></i> Learn More
+                            </a>
+                        </div>
                     </div>
                 </div>
                 <div class="col-lg-6">
@@ -1031,13 +1021,6 @@
                     <div class="stat-number">98%</div>
                     <div class="stat-label">Success Rate</div>
                 </div>
-                <div class="stat-card">
-    <div class="stat-icon">
-        <i class="fas fa-mobile-alt"></i>
-    </div>
-    <div class="stat-number">{{ pwa_installs }}</div>
-    <div class="stat-label">App Installations</div>
-</div>
             </div>
         </div>
     </div>
@@ -1284,8 +1267,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.1/umd/popper.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/js/bootstrap.min.js"></script>
-    <!-- Add this script at the bottom before closing body tag -->
-<script src="{% static 'pwa.js' %}"></script>
     
     <script>
         // Smooth scrolling
@@ -1359,85 +1340,6 @@
                 this.reset();
             }
         });
-        // PWA Install functionality
-let deferredPrompt;
-const installButton = document.getElementById('installButton');
-
-// Debug function to check PWA eligibility
-function checkPWAEligibility() {
-    console.log('Checking PWA eligibility...');
-    console.log('Is HTTPS:', location.protocol === 'https:' || location.hostname === 'localhost');
-    console.log('Service Worker supported:', 'serviceWorker' in navigator);
-    console.log('Current URL:', window.location.href);
-    console.log('User Agent:', navigator.userAgent);
-}
-
-// Check eligibility on load
-checkPWAEligibility();
-
-// Listen for the beforeinstallprompt event
-window.addEventListener('beforeinstallprompt', (e) => {
-    console.log('beforeinstallprompt event fired');
-    // Prevent the mini-infobar from appearing on mobile
-    e.preventDefault();
-    // Stash the event so it can be triggered later
-    deferredPrompt = e;
-    // Show the install button
-    installButton.style.display = 'inline-flex';
-    console.log('Install button shown');
-});
-
-// Handle install button click
-installButton.addEventListener('click', async () => {
-    console.log('Install button clicked');
-    if (!deferredPrompt) {
-        console.log('No deferred prompt available');
-        return;
-    }
-    
-    // Show the install prompt
-    deferredPrompt.prompt();
-    
-    // Wait for the user to respond to the prompt
-    const { outcome } = await deferredPrompt.userChoice;
-    
-    if (outcome === 'accepted') {
-        console.log('User accepted the install prompt');
-    } else {
-        console.log('User dismissed the install prompt');
-    }
-    
-    // Clear the deferredPrompt
-    deferredPrompt = null;
-    installButton.style.display = 'none';
-});
-
-// Handle successful installation
-window.addEventListener('appinstalled', () => {
-    console.log('PWA was installed');
-    // Hide the install button
-    installButton.style.display = 'none';
-    // Clear the deferredPrompt
-    deferredPrompt = null;
-});
-
-// Check if already installed (for debugging)
-if (window.matchMedia('(display-mode: standalone)').matches) {
-    console.log('PWA is already installed');
-    installButton.style.display = 'none';
-}
-
-// For testing - show button after 3 seconds if not shown naturally
-setTimeout(() => {
-    if (!deferredPrompt && installButton.style.display === 'none') {
-        console.log('No install prompt detected after 3 seconds');
-        console.log('This might be because:');
-        console.log('1. PWA is already installed');
-        console.log('2. Browser doesn\'t support installation');
-        console.log('3. Site doesn\'t meet PWA requirements');
-        console.log('4. User has dismissed the prompt before');
-    }
-}, 3000);
     </script>
 </body>
 </html>
