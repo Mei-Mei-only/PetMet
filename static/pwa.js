@@ -1,18 +1,42 @@
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('{% static "service-worker.js" %}')
+    navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
       .then(registration => {
-        console.log('ServiceWorker registration successful');
+        console.log('SW registered with scope:', registration.scope);
       })
       .catch(err => {
-        console.log('ServiceWorker registration failed: ', err);
+        console.log('SW registration failed:', err);
       });
   });
 }
 
-// Track PWA installations
-window.addEventListener('appinstalled', (evt) => {
-  // Send installation event to server
+let deferredPrompt;
+const installBtn = document.getElementById('installBtn');
+
+// Enhanced installation handling
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  if (installBtn) {
+    installBtn.style.display = 'block';
+    installBtn.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log(outcome === 'accepted' ? 'Accepted' : 'Dismissed');
+      deferredPrompt = null;
+      if (installBtn) installBtn.style.display = 'none';
+    });
+  }
+});
+
+window.addEventListener('appinstalled', () => {
+  console.log('PWA installed');
+  if (installBtn) installBtn.style.display = 'none';
+  trackInstallation();
+});
+
+function trackInstallation() {
   fetch('/track-pwa-install/', {
     method: 'POST',
     headers: {
@@ -22,10 +46,18 @@ window.addEventListener('appinstalled', (evt) => {
     body: JSON.stringify({type: 'install'})
   }).then(response => {
     console.log('Installation tracked');
+    updateDownloadCount();
   });
-});
+}
 
-// Helper function to get CSRF token
+function updateDownloadCount() {
+  const counter = document.getElementById('pwa-stat');
+  if (counter) {
+    const current = parseInt(counter.textContent) || 0;
+    counter.textContent = (current + 1) + '+';
+  }
+}
+
 function getCookie(name) {
   let cookieValue = null;
   if (document.cookie && document.cookie !== '') {
