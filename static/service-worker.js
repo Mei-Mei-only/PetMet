@@ -1,6 +1,6 @@
 const CACHE_NAME = 'petmet-cache-v1';
 const urlsToCache = [
-  '/',
+  '/LoginPageTemplates/landing.html',
   '/static/manifest.json',
   '/static/PetMetLogo.jpg',
   '/static/TeamLogo.png',
