@@ -92,8 +92,16 @@ class PendingPetForAdoptionViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(adoption_status=adoption_status)
         return queryset
     
+# views.py
 def landing(request):
-    return render(request, 'landing.html')  # Ensure 'landing.html' is the correct path
+    # Your existing view code
+    pwa_installs = PWAInstallation.objects.count()
+    
+    context = {
+        # Your existing context
+        'pwa_installs': pwa_installs,
+    }
+    return render(request, 'landing.html', context)
 
 def mobileTermsandConsitions(request):
     return render(request, 'terms_conditions.html')  # Ensure 'landing.html' is the correct path
