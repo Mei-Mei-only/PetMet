@@ -32,8 +32,6 @@ import pytz
 import calendar
 
 import json
-from django.views.decorators.http import require_POST
-import user_agents
 
 
 # Get the month names
@@ -1355,13 +1353,9 @@ def admin_view_rejected_list(request):
 def track_pwa_install(request):
     try:
         data = json.loads(request.body)
-        user_agent_string = request.META.get('HTTP_USER_AGENT', '')
-        user_agent = user_agents.parse(user_agent_string)
-        
-        device_info = f"{user_agent.get_device()} - {user_agent.get_os()} - {user_agent.get_browser()}"
         
         PWAInstallation.objects.create(
-            device_info=device_info,
+            device_info=request.META.get('HTTP_USER_AGENT', 'unknown'),
             source=data.get('type', 'unknown')
         )
         
