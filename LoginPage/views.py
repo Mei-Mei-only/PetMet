@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages, admin
 from django.contrib.auth.models import User, auth
 from django.contrib.auth import login
-from adoption.models import PendingPetForAdoption, Admin, PetAdoptionTable, TrackUpdateTable, Notification, AdminUser, PageView
+from adoption.models import PendingPetForAdoption, Admin, PetAdoptionTable, TrackUpdateTable, Notification, AdminUser, PageView, PWAInstallation
 from django.core.paginator import Paginator
 from .forms import PetAdoptionForm, SignUpForm, LoginForm, PetAdoptionFormRequest, AdminProfileForm, TrackUpdateForm, PendingPetForAdoptionForm,AdminSignupForm
 from django.contrib.auth.decorators import login_required
@@ -32,7 +32,8 @@ import pytz
 import calendar
 
 import json
-
+from django.views.decorators.http import require_POST
+import user_agents
 
 
 # Get the month names
@@ -1340,3 +1341,22 @@ def admin_view_rejected_list(request):
         })
     
     return render(request, 'admin_view_rejected_list.html', {'requests': request_list})
+
+@require_POST
+@csrf_exempt
+def track_pwa_install(request):
+    try:
+        data = json.loads(request.body)
+        user_agent_string = request.META.get('HTTP_USER_AGENT', '')
+        user_agent = user_agents.parse(user_agent_string)
+        
+        device_info = f"{user_agent.get_device()} - {user_agent.get_os()} - {user_agent.get_browser()}"
+        
+        PWAInstallation.objects.create(
+            device_info=device_info,
+            source=data.get('type', 'unknown')
+        )
+        
+        return JsonResponse({'status': 'success'})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
