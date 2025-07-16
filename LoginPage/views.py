@@ -32,7 +32,7 @@ import pytz
 import calendar
 
 import json
-
+from django.views.decorators.http import require_POST
 
 # Get the month names
 months = list(calendar.month_name)
