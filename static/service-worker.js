@@ -1,7 +1,7 @@
 const CACHE_NAME = 'petmet-cache-v1';
 const urlsToCache = [
   '/',
-  '/static/',
+  '/static/manifest.json',
   '/static/PetMetLogo.jpg',
   '/static/TeamLogo.png',
   '/static/team/Arvin.png',
