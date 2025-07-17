@@ -1,15 +1,13 @@
 const CACHE_NAME = 'petmet-cache-v1';
-const OFFLINE_URL = './LoginPageTemplates/landing.html';  // Consider adding an offline fallback page
 const urlsToCache = [
-  './',
-  './LoginPageTemplates/landing.html',
-  './static/manifest.json',
-  './static/PetMetLogo.jpg',
-  './static/TeamLogo.png',
-  './static/team/Arvin.png',
-  './static/team/455955679_1001877174954352_6720492336956922263_n.jpg',
-  './static/team/455700785_1038882434606928_3900257605003181516_n.jpg',
-  './static/team/bernalene.png',
+  '/',
+  './manifest.json',
+  './PetMetLogo.jpg',
+  './TeamLogo.png',
+  './team/Arvin.png',
+  './team/455955679_1001877174954352_6720492336956922263_n.jpg',
+  './team/455700785_1038882434606928_3900257605003181516_n.jpg',
+  './team/bernalene.png',
   // Add other static files you want to cache
 ];
 
