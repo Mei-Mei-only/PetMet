@@ -9,11 +9,12 @@
     <meta name="description" content="PetMet helps you find your perfect pet match using AI and natural language processing. Adopt from shelters, rescuers, and private owners.">
     <meta name="author" content="Team Skylark">
 
-    <!-- Add these meta tags for PWA -->
-    <meta name="theme-color" content="#ff6b6b">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="manifest" href="{% static 'manifest.json' %}">
+   <!-- Add these meta tags for PWA -->
+<meta name="theme-color" content="#ff6b6b">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="{% static 'manifest.json' %}">
 
     
     <!-- Bootstrap CSS -->
@@ -984,7 +985,7 @@
     <a href="#about" class="btn-hero-secondary">
         <i class="fas fa-info-circle"></i> Learn More
     </a>
-    <a id="installBtn" class="btn-hero-secondary">
+    <a id="installBtn" class="btn-hero-secondary"  style="display: none;">
         <i class="fas fa-download"></i> Install App
     </a>
 </div>
@@ -1359,10 +1360,11 @@
                 this.reset();
             }
         });
-               // PWA Installation Logic
+              // PWA Installation Logic
 let deferredPrompt;
 
 window.addEventListener('beforeinstallprompt', (e) => {
+  console.log('✅ PWA is installable!');
   // Prevent the mini-infobar from appearing on mobile
   e.preventDefault();
   // Stash the event so it can be triggered later
@@ -1371,13 +1373,20 @@ window.addEventListener('beforeinstallprompt', (e) => {
   const installBtn = document.getElementById('installBtn');
   if (installBtn) {
     installBtn.style.display = 'block';
+    console.log('✅ Install button shown');
   }
 });
 
 // Install button click handler
-document.getElementById('installBtn')?.addEventListener('click', async () => {
-  if (!deferredPrompt) return;
+document.getElementById('installBtn')?.addEventListener('click', async (e) => {
+  e.preventDefault(); // Prevent any default anchor behavior
   
+  if (!deferredPrompt) {
+    console.log('❌ No deferred prompt available');
+    return;
+  }
+  
+  console.log('🚀 Showing install prompt');
   // Show the install prompt
   deferredPrompt.prompt();
   
@@ -1385,9 +1394,9 @@ document.getElementById('installBtn')?.addEventListener('click', async () => {
   const { outcome } = await deferredPrompt.userChoice;
   
   if (outcome === 'accepted') {
-    console.log('User accepted the install prompt');
+    console.log('✅ User accepted the install prompt');
   } else {
-    console.log('User dismissed the install prompt');
+    console.log('❌ User dismissed the install prompt');
   }
   
   // Clear the saved prompt since it can't be used again
@@ -1400,8 +1409,13 @@ document.getElementById('installBtn')?.addEventListener('click', async () => {
   }
 });
 
-// Track PWA installations (existing code)
+// Track PWA installations
 window.addEventListener('appinstalled', (evt) => {
+  console.log('🎉 PWA was installed successfully!');
+  
+  // Update the download counter
+  updateDownloadCounter();
+  
   // Send installation event to server
   fetch('/track-pwa-install/', {
     method: 'POST',
@@ -1412,6 +1426,8 @@ window.addEventListener('appinstalled', (evt) => {
     body: JSON.stringify({type: 'install'})
   }).then(response => {
     console.log('Installation tracked');
+  }).catch(error => {
+    console.error('Failed to track installation:', error);
   });
   
   // Hide the install button after installation
@@ -1421,20 +1437,29 @@ window.addEventListener('appinstalled', (evt) => {
   }
 });
 
-// Service Worker registration (existing code)
+// Function to update download counter
+function updateDownloadCounter() {
+  const statElement = document.getElementById('pwa-stat');
+  if (statElement) {
+    let currentCount = parseInt(statElement.textContent) || 0;
+    statElement.textContent = `${currentCount + 1}+`;
+  }
+}
+
+// Service Worker registration
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('{% static "service-worker.js" %}')
       .then(registration => {
-        console.log('ServiceWorker registration successful');
+        console.log('✅ ServiceWorker registration successful');
       })
       .catch(err => {
-        console.log('ServiceWorker registration failed: ', err);
+        console.error('❌ ServiceWorker registration failed:', err);
       });
   });
 }
 
-// Helper function to get CSRF token (existing code)
+// Helper function to get CSRF token
 function getCookie(name) {
   let cookieValue = null;
   if (document.cookie && document.cookie !== '') {
