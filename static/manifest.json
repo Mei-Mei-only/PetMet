@@ -8,44 +8,44 @@
   "theme_color": "#ff6b6b",
   "icons": [
     {
-      "src": "/static/PetMetLogo.jpg",
+      "src": "/static/PetMetLogo.png",
       "sizes": "72x72",
-      "type": "image/jpeg"
+      "type": "image/png"
     },
     {
-      "src": "/static/PetMetLogo.jpg",
+      "src": "/static/PetMetLogo.png",
       "sizes": "96x96",
-      "type": "image/jpeg"
+      "type": "image/png"
     },
     {
-      "src": "/static/PetMetLogo.jpg",
+      "src": "/static/PetMetLogo.png",
       "sizes": "128x128",
-      "type": "image/jpeg"
+      "type": "image/png"
     },
     {
-      "src": "/static/PetMetLogo.jpg",
+      "src": "/static/PetMetLogo.png",
       "sizes": "144x144",
-      "type": "image/jpeg"
+      "type": "image/png"
     },
     {
-      "src": "/static/PetMetLogo.jpg",
+      "src": "/static/PetMetLogo.png",
       "sizes": "152x152",
-      "type": "image/jpeg"
+      "type": "image/png"
     },
     {
-      "src": "/static/PetMetLogo.jpg",
+      "src": "/static/PetMetLogo.png",
       "sizes": "192x192",
-      "type": "image/jpeg"
+      "type": "image/png"
     },
     {
-      "src": "/static/PetMetLogo.jpg",
+      "src": "/static/PetMetLogo.png",
       "sizes": "384x384",
-      "type": "image/jpeg"
+      "type": "image/png"
     },
     {
-      "src": "/static/PetMetLogo.jpg",
+      "src": "/static/PetMetLogo.png",
       "sizes": "512x512",
-      "type": "image/jpeg"
+      "type": "image/png"
     }
   ]
 }
