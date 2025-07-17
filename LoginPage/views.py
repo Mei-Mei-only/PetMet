@@ -1354,20 +1354,50 @@ def track_pwa_install(request):
     try:
         data = json.loads(request.body)
         
-        PWAInstallation.objects.create(
-            device_info=request.META.get('HTTP_USER_AGENT', 'unknown'),
-            source=data.get('type', 'unknown')
+        # Get additional info from request
+        user_agent = request.META.get('HTTP_USER_AGENT', 'unknown')
+        ip_address = request.META.get('REMOTE_ADDR', 'unknown')
+        
+        installation = PWAInstallation.objects.create(
+            device_info=user_agent,
+            source=data.get('type', 'unknown'),
+            ip_address=ip_address,  # Add this field to your model if needed
+            user_agent_full=data.get('user_agent', user_agent)
         )
         
-        return JsonResponse({'status': 'success'})
+        logger.info(f"PWA installation tracked: {installation.id}")
+        
+        return JsonResponse({
+            'status': 'success',
+            'installation_id': installation.id,
+            'total_installs': PWAInstallation.objects.count()
+        })
+        
+    except json.JSONDecodeError:
+        logger.error("Invalid JSON in PWA install request")
+        return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
     except Exception as e:
-        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+        logger.error(f"Error tracking PWA installation: {str(e)}")
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 def get_pwa_stats(request):
-    total_installs = PWAInstallation.objects.count()
-    return JsonResponse({
-        'total_installs': total_installs,
-        'last_week_installs': PWAInstallation.objects.filter(
-            installed_at__gte=timezone.now() - timedelta(days=7))
-        .count()
-    })
+    try:
+        total_installs = PWAInstallation.objects.count()
+        last_week_installs = PWAInstallation.objects.filter(
+            installed_at__gte=timezone.now() - timedelta(days=7)
+        ).count()
+        
+        today_installs = PWAInstallation.objects.filter(
+            installed_at__date=timezone.now().date()
+        ).count()
+        
+        return JsonResponse({
+            'status': 'success',
+            'total_installs': total_installs,
+            'last_week_installs': last_week_installs,
+            'today_installs': today_installs
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting PWA stats: {str(e)}")
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
