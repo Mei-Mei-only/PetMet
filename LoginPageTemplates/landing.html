@@ -1360,121 +1360,191 @@
                 this.reset();
             }
         });
-              // PWA Installation Logic
+            // Complete PWA Installation Script
 let deferredPrompt;
 
+// Load PWA stats on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadPWAStats();
+});
+
+// Function to load and display PWA stats
+async function loadPWAStats() {
+    try {
+        const response = await fetch('/pwa-stats/');
+        const data = await response.json();
+        
+        const statElement = document.getElementById('pwa-stat');
+        if (statElement && data.total_installs) {
+            statElement.textContent = `${data.total_installs}+`;
+        }
+        
+        console.log(`📊 PWA Stats: ${data.total_installs} total installs, ${data.last_week_installs} this week`);
+    } catch (error) {
+        console.error('Failed to load PWA stats:', error);
+    }
+}
+
+// PWA Installation Logic
 window.addEventListener('beforeinstallprompt', (e) => {
-  console.log('✅ PWA is installable!');
-  // Prevent the mini-infobar from appearing on mobile
-  e.preventDefault();
-  // Stash the event so it can be triggered later
-  deferredPrompt = e;
-  // Show the install button
-  const installBtn = document.getElementById('installBtn');
-  if (installBtn) {
-    installBtn.style.display = 'block';
-    console.log('✅ Install button shown');
-  }
+    console.log('✅ PWA is installable!');
+    // Prevent the mini-infobar from appearing on mobile
+    e.preventDefault();
+    // Stash the event so it can be triggered later
+    deferredPrompt = e;
+    // Show the install button
+    const installBtn = document.getElementById('installBtn');
+    if (installBtn) {
+        installBtn.style.display = 'block';
+        console.log('✅ Install button shown');
+    }
 });
 
 // Install button click handler
 document.getElementById('installBtn')?.addEventListener('click', async (e) => {
-  e.preventDefault(); // Prevent any default anchor behavior
-  
-  if (!deferredPrompt) {
-    console.log('❌ No deferred prompt available');
-    return;
-  }
-  
-  console.log('🚀 Showing install prompt');
-  // Show the install prompt
-  deferredPrompt.prompt();
-  
-  // Wait for the user to respond to the prompt
-  const { outcome } = await deferredPrompt.userChoice;
-  
-  if (outcome === 'accepted') {
-    console.log('✅ User accepted the install prompt');
-  } else {
-    console.log('❌ User dismissed the install prompt');
-  }
-  
-  // Clear the saved prompt since it can't be used again
-  deferredPrompt = null;
-  
-  // Hide the install button
-  const installBtn = document.getElementById('installBtn');
-  if (installBtn) {
-    installBtn.style.display = 'none';
-  }
+    e.preventDefault(); // Prevent any default anchor behavior
+    
+    if (!deferredPrompt) {
+        console.log('❌ No deferred prompt available');
+        return;
+    }
+    
+    console.log('🚀 Showing install prompt');
+    // Show the install prompt
+    deferredPrompt.prompt();
+    
+    // Wait for the user to respond to the prompt
+    const { outcome } = await deferredPrompt.userChoice;
+    
+    if (outcome === 'accepted') {
+        console.log('✅ User accepted the install prompt');
+    } else {
+        console.log('❌ User dismissed the install prompt');
+    }
+    
+    // Clear the saved prompt since it can't be used again
+    deferredPrompt = null;
+    
+    // Hide the install button
+    const installBtn = document.getElementById('installBtn');
+    if (installBtn) {
+        installBtn.style.display = 'none';
+    }
 });
 
 // Track PWA installations
 window.addEventListener('appinstalled', (evt) => {
-  console.log('🎉 PWA was installed successfully!');
-  
-  // Update the download counter
-  updateDownloadCounter();
-  
-  // Send installation event to server
-  fetch('/track-pwa-install/', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': getCookie('csrftoken'),
-    },
-    body: JSON.stringify({type: 'install'})
-  }).then(response => {
-    console.log('Installation tracked');
-  }).catch(error => {
-    console.error('Failed to track installation:', error);
-  });
-  
-  // Hide the install button after installation
-  const installBtn = document.getElementById('installBtn');
-  if (installBtn) {
-    installBtn.style.display = 'none';
-  }
+    console.log('🎉 PWA was installed successfully!');
+    
+    // Send installation event to server
+    fetch('/track-pwa-install/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),
+        },
+        body: JSON.stringify({
+            type: 'install',
+            timestamp: new Date().toISOString(),
+            user_agent: navigator.userAgent
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('✅ Installation tracked:', data);
+        
+        // Update the counter with real data from server
+        if (data.total_installs) {
+            const statElement = document.getElementById('pwa-stat');
+            if (statElement) {
+                statElement.textContent = `${data.total_installs}+`;
+            }
+        }
+    })
+    .catch(error => {
+        console.error('❌ Failed to track installation:', error);
+        // Fallback to local increment
+        updateDownloadCounter();
+    });
+    
+    // Hide the install button after installation
+    const installBtn = document.getElementById('installBtn');
+    if (installBtn) {
+        installBtn.style.display = 'none';
+    }
 });
 
-// Function to update download counter
+// Function to update download counter (fallback)
 function updateDownloadCounter() {
-  const statElement = document.getElementById('pwa-stat');
-  if (statElement) {
-    let currentCount = parseInt(statElement.textContent) || 0;
-    statElement.textContent = `${currentCount + 1}+`;
-  }
+    const statElement = document.getElementById('pwa-stat');
+    if (statElement) {
+        let currentCount = parseInt(statElement.textContent) || 0;
+        statElement.textContent = `${currentCount + 1}+`;
+    }
 }
 
 // Service Worker registration
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('{% static "service-worker.js" %}')
-      .then(registration => {
-        console.log('✅ ServiceWorker registration successful');
-      })
-      .catch(err => {
-        console.error('❌ ServiceWorker registration failed:', err);
-      });
-  });
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('{% static "service-worker.js" %}')
+            .then(registration => {
+                console.log('✅ ServiceWorker registration successful');
+            })
+            .catch(err => {
+                console.error('❌ ServiceWorker registration failed:', err);
+            });
+    });
 }
 
 // Helper function to get CSRF token
 function getCookie(name) {
-  let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
-    const cookies = document.cookie.split(';');
-    for (let i = 0; i < cookies.length; i++) {
-      const cookie = cookies[i].trim();
-      if (cookie.substring(0, name.length + 1) === (name + '=')) {
-        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-        break;
-      }
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
     }
-  }
-  return cookieValue;
+    return cookieValue;
 }
 
+// Optional: Check if PWA is already installed
+function isPWAInstalled() {
+    return window.matchMedia('(display-mode: standalone)').matches;
+}
+
+// Optional: Hide install button if PWA is already installed
+document.addEventListener('DOMContentLoaded', function() {
+    if (isPWAInstalled()) {
+        const installBtn = document.getElementById('installBtn');
+        if (installBtn) {
+            installBtn.style.display = 'none';
+        }
+        console.log('✅ PWA is already installed');
+    }
+});
+
+// Optional: Track PWA launch (when opened from home screen)
+if (isPWAInstalled()) {
+    // Track that PWA was launched from home screen
+    console.log('📱 PWA launched from home screen');
+}
+
+// Optional: Update UI when PWA becomes installable
+window.addEventListener('beforeinstallprompt', (e) => {
+    // You can also add visual indicators here
+    document.body.classList.add('pwa-installable');
+});
+
+// Optional: Clean up when PWA is installed
+window.addEventListener('appinstalled', (evt) => {
+    document.body.classList.remove('pwa-installable');
+    document.body.classList.add('pwa-installed');
+});
     </script>
 </body>
 </html>
