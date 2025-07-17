@@ -1371,17 +1371,36 @@ document.addEventListener('DOMContentLoaded', function() {
 // Function to load and display PWA stats
 async function loadPWAStats() {
     try {
-        const response = await fetch('/pwa-stats/');
+        const response = await fetch('/get-pwa-stats/');
+        
+        // Check if response is successful
+        if (!response.ok) {
+            console.warn(`⚠️ PWA stats endpoint returned ${response.status}. Stats feature disabled.`);
+            return;
+        }
+        
+        // Check if response is actually JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            console.warn('⚠️ PWA stats endpoint returned non-JSON response. Stats feature disabled.');
+            return;
+        }
+        
         const data = await response.json();
         
         const statElement = document.getElementById('pwa-stat');
-        if (statElement && data.total_installs) {
+        if (statElement && data.total_installs !== undefined) {
             statElement.textContent = `${data.total_installs}+`;
         }
         
         console.log(`📊 PWA Stats: ${data.total_installs} total installs, ${data.last_week_installs} this week`);
     } catch (error) {
-        console.error('Failed to load PWA stats:', error);
+        console.warn('⚠️ PWA stats not available:', error.message);
+        // Set default value if stats are not available
+        const statElement = document.getElementById('pwa-stat');
+        if (statElement) {
+            statElement.textContent = '0+';
+        }
     }
 }
 
@@ -1449,7 +1468,12 @@ window.addEventListener('appinstalled', (evt) => {
             user_agent: navigator.userAgent
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
         console.log('✅ Installation tracked:', data);
         
@@ -1462,7 +1486,7 @@ window.addEventListener('appinstalled', (evt) => {
         }
     })
     .catch(error => {
-        console.error('❌ Failed to track installation:', error);
+        console.warn('⚠️ Failed to track installation:', error);
         // Fallback to local increment
         updateDownloadCounter();
     });
