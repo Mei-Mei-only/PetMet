@@ -8,6 +8,8 @@ const urlsToCache = [
   './team/455955679_1001877174954352_6720492336956922263_n.jpg',
   './team/455700785_1038882434606928_3900257605003181516_n.jpg',
   './team/bernalene.png',
+  '/static/screenshots/desktop-wide.png',
+  '/static/screenshots/mobile-narrow.png'
   // Add other static files you want to cache
 ];
 
