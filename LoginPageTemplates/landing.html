@@ -1424,7 +1424,7 @@ window.addEventListener('appinstalled', (evt) => {
 // Service Worker registration (existing code)
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('{% static "/static/service-worker.js" %}')
+    navigator.serviceWorker.register('{% static "service-worker.js" %}')
       .then(registration => {
         console.log('ServiceWorker registration successful');
       })
