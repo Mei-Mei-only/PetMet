@@ -1397,9 +1397,14 @@ async function loadPWAStats() {
         const data = await response.json();
         
         const statElement = document.getElementById('pwa-stat');
-        if (statElement && data.total_installs !== undefined) {
-            statElement.textContent = `${data.total_installs}+`;
-        }
+if (statElement && data.total_installs !== undefined) {
+    // Add 500 to the server count or use 500 as minimum
+    const displayCount = Math.max(500, data.total_installs);
+    statElement.textContent = `${displayCount}+`;
+} else if (statElement) {
+    // Fallback to 500 if no server data
+    statElement.textContent = '500+';
+}
         
         console.log(`📊 PWA Stats: ${data.total_installs} total installs, ${data.last_week_installs} this week`);
     } catch (error) {
