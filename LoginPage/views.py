@@ -1356,13 +1356,11 @@ def track_pwa_install(request):
         
         # Get additional info from request
         user_agent = request.META.get('HTTP_USER_AGENT', 'unknown')
-        ip_address = request.META.get('REMOTE_ADDR', 'unknown')
         
         installation = PWAInstallation.objects.create(
             device_info=user_agent,
             source=data.get('type', 'unknown'),
-            ip_address=ip_address,  # Add this field to your model if needed
-            user_agent_full=data.get('user_agent', user_agent)
+            # Remove ip_address and user_agent_full since they don't exist in your model
         )
         
         logger.info(f"PWA installation tracked: {installation.id}")
