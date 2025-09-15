@@ -1378,40 +1378,39 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Function to load and display PWA stats
 async function loadPWAStats() {
     try {
         const response = await fetch('/get-pwa-stats/');
         
         if (!response.ok) {
-            console.warn(`⚠️ PWA stats endpoint returned ${response.status}. Stats feature disabled.`);
+            console.warn(`PWA stats endpoint returned ${response.status}. Stats feature disabled.`);
             return;
         }
         
         const contentType = response.headers.get('content-type');
         if (!contentType || !contentType.includes('application/json')) {
-            console.warn('⚠️ PWA stats endpoint returned non-JSON response. Stats feature disabled.');
+            console.warn('PWA stats endpoint returned non-JSON response. Stats feature disabled.');
             return;
         }
         
         const data = await response.json();
         
         const statElement = document.getElementById('pwa-stat');
-if (statElement && data.total_installs !== undefined) {
-    // Add 500 to the server count or use 500 as minimum
-    const displayCount = Math.max(500, data.total_installs);
-    statElement.textContent = `${displayCount}+`;
-} else if (statElement) {
-    // Fallback to 500 if no server data
-    statElement.textContent = '500+';
-}
+        if (statElement && data.total_installs !== undefined) {
+            // Add server count to the base 500
+            const displayCount = 500 + data.total_installs;
+            statElement.textContent = `${displayCount}+`;
+        } else if (statElement) {
+            // Fallback to base 500 if no server data
+            statElement.textContent = '500+';
+        }
         
-        console.log(`📊 PWA Stats: ${data.total_installs} total installs, ${data.last_week_installs} this week`);
+        console.log(`PWA Stats: ${data.total_installs} server installs + 500 base = ${500 + (data.total_installs || 0)} total`);
     } catch (error) {
-        console.warn('⚠️ PWA stats not available:', error.message);
+        console.warn('PWA stats not available:', error.message);
         const statElement = document.getElementById('pwa-stat');
         if (statElement) {
-            statElement.textContent = '0+';
+            statElement.textContent = '500+';
         }
     }
 }
@@ -1462,7 +1461,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Track PWA installations
 window.addEventListener('appinstalled', (evt) => {
-    console.log('🎉 PWA was installed successfully!');
+   console.log('PWA was installed successfully!');
     
     // Send installation event to server
     fetch('/track-pwa-install/', {
@@ -1484,17 +1483,19 @@ window.addEventListener('appinstalled', (evt) => {
         return response.json();
     })
     .then(data => {
-        console.log('✅ Installation tracked:', data);
+        console.log('Installation tracked:', data);
         
         if (data.total_installs) {
             const statElement = document.getElementById('pwa-stat');
             if (statElement) {
-                statElement.textContent = `${data.total_installs}+`;
+                // Add server count to base 500
+                const displayCount = 500 + data.total_installs;
+                statElement.textContent = `${displayCount}+`;
             }
         }
     })
     .catch(error => {
-        console.warn('⚠️ Failed to track installation:', error);
+        console.warn('Failed to track installation:', error);
         updateDownloadCounter();
     });
     
@@ -1511,7 +1512,7 @@ window.addEventListener('appinstalled', (evt) => {
 function updateDownloadCounter() {
     const statElement = document.getElementById('pwa-stat');
     if (statElement) {
-        let currentCount = parseInt(statElement.textContent) || 0;
+        let currentCount = parseInt(statElement.textContent) || 500;
         statElement.textContent = `${currentCount + 1}+`;
     }
 }
