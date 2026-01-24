@@ -976,15 +976,3 @@ def debug_model_fields(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
         
-def pet_image_view(request, pk):
-    """
-    Serve image stored as BLOB in MySQL for a given pet.
-    """
-    try:
-        pet = Adopt.objects.get(pk=pk)
-    except Adopt.DoesNotExist:
-        raise Http404("Pet not found")
-
-    # pet.img is your BLOB field
-    # If you have multiple image types, replace 'image/jpeg' with pet.img_type
-    return HttpResponse(pet.img, content_type='image/jpeg')
