@@ -246,7 +246,7 @@
 <div class="pets-column-container">
     <article class="pet-item-column">
         <div class="pet-image-container-column">
-            <img src="{{ adopt.img.url }}" alt="Pet Image" class="pet-image-column">
+            <img src="{% url 'pet_image' adopt.pk %}" alt="Pet Image" class="pet-image-column">
         </div>
         <div class="pet-info-column">
             <h3 class="pet-name-column">{{ adopt.name }}</h3>
