@@ -40,7 +40,7 @@ DEBUG = True
 
 INSTALLED_APPS = [
     'cloudinary', 
-    'cloudinary_storage'
+    'cloudinary_storage',
     'adoption.apps.AdoptionConfig',
     'django.contrib.admin',
     'django.contrib.auth',
