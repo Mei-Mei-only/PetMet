@@ -39,6 +39,8 @@ DEBUG = True
 # Application definition
 
 INSTALLED_APPS = [
+    'cloudinary', 
+    'cloudinary_storage'
     'adoption.apps.AdoptionConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -52,6 +54,14 @@ INSTALLED_APPS = [
     'LoginPage',
 
 ]
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'degltdhxm',
+    'API_KEY': '919479814195178',
+    'API_SECRET': '613ftBBpFIAdmAHZMIKmUy_d5yA',
+}
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
