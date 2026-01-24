@@ -12,6 +12,7 @@ urlpatterns = [
     path('api/search/suggestions/', views.search_suggestions_api, name='search_suggestions_api'),
     path('api/analyze-query/', views.analyze_query_api, name='analyze_query_api'),
     path('api/smart-search/', views.smart_search_api, name='smart_search_api'),
+    path('pet-image/<int:pk>/', views.pet_image_view, name='pet_image'),
     
     # ===== EXISTING WEB SEARCH URL =====
     path('api/search/web/', views.search_pets_web, name='search_pets_web'),
