@@ -2,8 +2,11 @@
 {% block content %}
 <div class="request-detail-page">
     <div class="container">
-        <!-- Header -->
+       <!-- Header -->
         <div class="page-header">
+            <a href="{% url 'admin_adoption_request' %}" class="back-btn-header">
+                ← Back to Requests
+            </a>
             <div class="header-content">
                 <h1>Adoption Request Details</h1>
                 <p>Request for {{ request.pet.name }}</p>
@@ -92,6 +95,33 @@
                             <span class="label">ID Number</span>
                             <span class="value">{{ request.id_number }}</span>
                         </div>
+
+                        <!-- ID Verification Card -->
+            <div class="id-verification-card">
+                <div class="card-header">
+                    <h2>🆔 ID Verification</h2>
+                </div>
+                
+                <div class="id-content">
+                    
+                    <div class="id-image-section">
+                        <span class="label">Uploaded ID</span>
+                        {% if request.id_upload %}
+                            <div class="id-image-container">
+                                <img src="{{ request.id_upload.url }}" alt="ID Verification" class="id-image" />
+                                <a href="{{ request.id_upload.url }}" target="_blank" class="view-full-btn">
+                                    🔍 View Full Size
+                                </a>
+                            </div>
+                        {% else %}
+                            <div class="id-placeholder">
+                                <span class="placeholder-icon">📄</span>
+                                <span class="placeholder-text">No ID uploaded</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
                         
                         <div class="info-item span-full">
                             <span class="label">Facebook Profile</span>
@@ -173,13 +203,6 @@
             </div>
             {% endif %}
         </div>
-
-        <!-- Back Button -->
-        <div class="back-section">
-            <a href="{% url 'admin_adoption_request' %}" class="back-btn">
-                ← Back to Requests
-            </a>
-        </div>
     </div>
 </div>
 
@@ -198,12 +221,34 @@
 
     /* Header */
     .page-header {
-        display: flex;
-        justify-content: space-between;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
         align-items: center;
         margin-bottom: 32px;
-        flex-wrap: wrap;
-        gap: 16px;
+        gap: 20px;
+    }
+
+    .back-btn-header {
+        background: #f3f4f6;
+        color: #374151;
+        border: 1px solid #d1d5db;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+
+    .back-btn-header:hover {
+        background: #e5e7eb;
+        color: #1f2937;
+        text-decoration: none;
     }
 
     .header-content h1 {
@@ -257,7 +302,7 @@
         display: grid;
         grid-template-columns: 350px 1fr;
         gap: 24px;
-        margin-bottom: 32px;
+        margin-bottom: 24px;
     }
 
     /* Cards */
@@ -375,6 +420,95 @@
     /* Adopter Info Card */
     .adopter-content {
         padding: 24px;
+    }
+
+    /* ID Verification Card */
+    .id-verification-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        grid-column: 1 / -1;
+        margin-bottom: 8px;
+    }
+
+    .id-content {
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+    .id-details {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .id-image-section {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .id-image-section > .label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .id-image-container {
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #f9fafb;
+    }
+
+    .id-image {
+        width: 100%;
+        height: auto;
+        display: block;
+        max-height: 400px;
+        object-fit: contain;
+    }
+
+    .view-full-btn {
+        display: block;
+        text-align: center;
+        padding: 10px;
+        background: #f3f4f6;
+        color: #374151;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 500;
+        border-top: 1px solid #e5e7eb;
+        transition: background 0.2s;
+    }
+
+    .view-full-btn:hover {
+        background: #e5e7eb;
+        text-decoration: none;
+    }
+
+    .id-placeholder {
+        background: #f3f4f6;
+        border: 2px dashed #d1d5db;
+        border-radius: 8px;
+        padding: 60px 20px;
+        text-align: center;
+        color: #6b7280;
+    }
+
+    .id-placeholder .placeholder-icon {
+        display: block;
+        font-size: 48px;
+        margin-bottom: 12px;
+        opacity: 0.5;
+    }
+
+    .id-placeholder .placeholder-text {
+        font-size: 14px;
     }
 
     .info-grid {
@@ -530,11 +664,6 @@
         text-decoration: none;
     }
 
-    /* Back Section */
-    .back-section {
-        text-align: center;
-    }
-
     /* Responsive */
     @media (max-width: 768px) {
         .container {
@@ -542,9 +671,14 @@
         }
 
         .page-header {
-            flex-direction: column;
-            align-items: stretch;
+            grid-template-columns: 1fr;
             text-align: center;
+            gap: 12px;
+        }
+        
+        .back-btn-header {
+            order: -1;
+            width: 100%;
         }
 
         .header-content h1 {
