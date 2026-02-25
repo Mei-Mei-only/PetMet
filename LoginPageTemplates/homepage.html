@@ -1343,7 +1343,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Load adoption form via AJAX
-    function showAdoptionForm(pk) {
+   function showAdoptionForm(pk) {
     var url = "{% url 'adopt_pet' 12345 %}".replace('12345', pk);
     $.ajax({
         type: 'GET',
@@ -1352,11 +1352,16 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('adoption-form-container').innerHTML = data;
             document.getElementById('adoption-modal').style.display = 'flex';
 
-            // ✅ Intercept form submit AFTER form is loaded into modal
+            // Intercept form submit AFTER form is loaded into modal
             $('#adoption-form-container form').on('submit', function(e) {
                 e.preventDefault();
 
-                // ✅ Use FormData instead of serialize() to include file uploads
+                // Get the submit button and show loading state
+                var submitBtn = $(this).find('[type=submit]');
+                submitBtn.prop('disabled', true);
+                submitBtn.html('<i class="fas fa-spinner fa-spin"></i> Submitting...');
+
+                // Use FormData to include file uploads
                 var formData = new FormData(this);
                 var submitUrl = $(this).attr('action') || url;
 
@@ -1364,24 +1369,37 @@ document.addEventListener('DOMContentLoaded', function() {
                     type: 'POST',
                     url: submitUrl,
                     data: formData,
-                    processData: false,  // ✅ Required for FormData
-                    contentType: false,  // ✅ Required for FormData
+                    processData: false,
+                    contentType: false,
                     success: function(response) {
-    // Close the modal
-    document.getElementById('adoption-modal').style.display = 'none';
+                        // Close the modal
+                        document.getElementById('adoption-modal').style.display = 'none';
 
-    // Show success popup
-    Swal.fire({
-        icon: 'success',
-        title: 'Adoption Request Sent!',
-        text: 'Your adoption request has been submitted successfully. We will notify you once it is reviewed.',
-        confirmButtonText: 'OK',
-        confirmButtonColor: '#3498db',
-    }).then(function() {
-        // Redirect to homepage after user clicks OK
-        window.location.href = "{% url 'homepage' %}";
-    });
-},
+                        // Reset button state
+                        submitBtn.prop('disabled', false);
+                        submitBtn.html('Submit');
+
+                        // Show success popup
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Adoption Request Sent!',
+                            text: 'Your adoption request has been submitted successfully. We will notify you once it is reviewed.',
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#3498db',
+                        }).then(function() {
+                            // Redirect to homepage after user clicks OK
+                            window.location.href = "{% url 'homepage' %}";
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        // Reset button state on error
+                        submitBtn.prop('disabled', false);
+                        submitBtn.html('Submit');
+
+                        // Reload form with validation errors
+                        document.getElementById('adoption-form-container').innerHTML = xhr.responseText;
+                        console.error("Error submitting adoption form:", error);
+                    }
                 });
             });
         },
