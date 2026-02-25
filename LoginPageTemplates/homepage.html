@@ -144,18 +144,6 @@
         <!-- Results Grid -->
         <div id="resultsContainer" class="results-container">
             <div id="petsGrid" class="pets-grid">
-                <!-- Pets from Database -->
-                {% for pet in adoption_listings %}
-                    <div class="pet-card-wrapper" 
-                         data-name="{{ pet.name|lower }}"
-                         data-type="{{ pet.animal_type|lower }}"
-                         data-breed="{{ pet.breed|lower }}"
-                         data-color="{{ pet.color|lower }}"
-                         data-location="{{ pet.location|lower }}"
-                         data-details="{{ pet.additional_details|lower }}">
-                        {% include 'article.html' with adopt=pet %}
-                    </div>
-                {% endfor %}
                 
                 {% for pet in pets %}
                     <div class="pet-card-wrapper"
@@ -1295,5 +1283,129 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Pet Search initialized successfully!');
 });
 </script>
+<!-- Shared Adoption Modal -->
+<div id="adoption-modal" class="modal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center;">
+    <div class="modal-content" style="background:white; padding:25px; border-radius:10px; width:80%; max-width:700px; box-shadow:0 4px 10px rgba(0,0,0,0.2); position:relative;">
+        <span style="position:absolute; top:15px; right:20px; font-size:24px; font-weight:bold; cursor:pointer; color:#666;" onclick="document.getElementById('adoption-modal').style.display='none'">&times;</span>
+        <div id="adoption-form-container"></div>
+    </div>
+</div>
 
+<!-- Shared Pet Detail Modal -->
+<div id="petDetailModal" class="modal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center;">
+    <div class="modal-content" style="background:white; padding:25px; border-radius:10px; width:80%; max-width:700px; box-shadow:0 4px 10px rgba(0,0,0,0.2); position:relative;">
+        <span style="position:absolute; top:15px; right:20px; font-size:24px; font-weight:bold; cursor:pointer; color:#666;" onclick="document.getElementById('petDetailModal').style.display='none'">&times;</span>
+        <div style="display:flex; flex-direction:column;">
+            <h2 id="detail-name" style="margin:0 0 15px 0; color:#2c3e50;"></h2>
+            <div style="display:flex; gap:25px; flex-wrap:wrap;">
+                <div style="flex:0 0 45%; max-width:45%;">
+                    <img id="detail-img" src="" alt="" style="width:100%; border-radius:8px; object-fit:cover;">
+                </div>
+                <div style="flex:1; display:flex; flex-direction:column;">
+                    <p><strong>Posted by:</strong> <span id="detail-author"></span></p>
+                    <p><strong>Animal Type:</strong> <span id="detail-type"></span></p>
+                    <p><strong>Breed:</strong> <span id="detail-breed"></span></p>
+                    <p><strong>Color:</strong> <span id="detail-color"></span></p>
+                    <p><strong>Gender:</strong> <span id="detail-gender"></span></p>
+                    <p><strong>Age:</strong> <span id="detail-age"></span> yr/s. old</p>
+                    <p><strong>From:</strong> <span id="detail-location"></span></p>
+                    <div style="margin-top:10px; padding-top:10px; border-top:1px solid #eee;">
+                        <p><strong>Description:</strong> <span id="detail-description"></span></p>
+                    </div>
+                    <div style="margin-top:20px; display:flex; gap:10px;">
+                        <button class="btn btn-light" onclick="document.getElementById('petDetailModal').style.display='none'">Back</button>
+                        <button class="btn btn-primary" id="detail-adopt-btn">Adopt</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Open the shared detail modal and fill it with pet data
+    function openDetailModal(pk, name, img, author, type, breed, color, gender, age, location, description) {
+        document.getElementById('detail-name').textContent = name;
+        document.getElementById('detail-img').src = img;
+        document.getElementById('detail-img').alt = name;
+        document.getElementById('detail-author').textContent = author;
+        document.getElementById('detail-type').textContent = type;
+        document.getElementById('detail-breed').textContent = breed;
+        document.getElementById('detail-color').textContent = color;
+        document.getElementById('detail-gender').textContent = gender;
+        document.getElementById('detail-age').textContent = age;
+        document.getElementById('detail-location').textContent = location;
+        document.getElementById('detail-description').textContent = description;
+        document.getElementById('detail-adopt-btn').onclick = function() {
+            adoptFromDetailModal(pk);
+        };
+        document.getElementById('petDetailModal').style.display = 'flex';
+    }
+
+    // Load adoption form via AJAX
+    function showAdoptionForm(pk) {
+    var url = "{% url 'adopt_pet' 12345 %}".replace('12345', pk);
+    $.ajax({
+        type: 'GET',
+        url: url,
+        success: function(data) {
+            document.getElementById('adoption-form-container').innerHTML = data;
+            document.getElementById('adoption-modal').style.display = 'flex';
+
+            // ✅ Intercept form submit AFTER form is loaded into modal
+            $('#adoption-form-container form').on('submit', function(e) {
+                e.preventDefault();
+
+                // ✅ Use FormData instead of serialize() to include file uploads
+                var formData = new FormData(this);
+                var submitUrl = $(this).attr('action') || url;
+
+                $.ajax({
+                    type: 'POST',
+                    url: submitUrl,
+                    data: formData,
+                    processData: false,  // ✅ Required for FormData
+                    contentType: false,  // ✅ Required for FormData
+                    success: function(response) {
+    // Close the modal
+    document.getElementById('adoption-modal').style.display = 'none';
+
+    // Show success popup
+    Swal.fire({
+        icon: 'success',
+        title: 'Adoption Request Sent!',
+        text: 'Your adoption request has been submitted successfully. We will notify you once it is reviewed.',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#3498db',
+    }).then(function() {
+        // Redirect to homepage after user clicks OK
+        window.location.href = "{% url 'homepage' %}";
+    });
+},
+                });
+            });
+        },
+        error: function(xhr, status, error) {
+            console.error("Error fetching adoption form:", error);
+        }
+    });
+}
+
+    // Adopt from inside the detail modal
+    function adoptFromDetailModal(pk) {
+        document.getElementById('petDetailModal').style.display = 'none';
+        showAdoptionForm(pk);
+    }
+
+    // Close any modal when clicking the dark backdrop
+    window.addEventListener('click', function(event) {
+        var modals = document.getElementsByClassName('modal');
+        for (var i = 0; i < modals.length; i++) {
+            if (event.target === modals[i]) {
+                modals[i].style.display = 'none';
+            }
+        }
+    });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 {% endblock %}
