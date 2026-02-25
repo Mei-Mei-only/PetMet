@@ -271,33 +271,35 @@
         overflow-y: auto;
     }
 
-    .pet-image-container {
-        height: 250px;
-        overflow: hidden;
-        background: #f8f9fa;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-    }
+   .pet-image-container {
+    height: 280px;
+    overflow: hidden;
+    background: #2c3e50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
 
-    .pet-main-image {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
+.pet-main-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+}
 
-    .pet-type-badge {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        background: rgba(52, 152, 219, 0.9);
-        color: white;
-        padding: 4px 8px;
-        border-radius: 12px;
-        font-size: 11px;
-        font-weight: 500;
-    }
+   .pet-type-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(52, 152, 219, 0.9);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    z-index: 10;
+}
 
     .pet-info-section {
         padding: 30px;
@@ -674,7 +676,7 @@
                         <span class="contact-text">Location: <span id="modalPetLocation"></span></span>
                     </div>
                 </div>
-                <button class="adopt-btn" onclick="contactOwner()">Contact for Adoption</button>
+                <button class="adopt-btn" onclick="openAdoptionFromMap(window.currentModalPet.id)">Adopt This Pet</button>
             </div>
         </div>
     </div>
@@ -819,8 +821,10 @@ function displayAllPets() {
     console.log(`Displayed ${allPets.length} pets on map`);
 }
 
+// ✅ Track how many pets are at each coordinate
+const locationCount = {};
+
 function addPetMarker(pet) {
-    // Create emoji icon based on pet type
     let iconEmoji = '';
     switch(pet.type) {
         case 'dog': iconEmoji = '🐕'; break;
@@ -829,29 +833,66 @@ function addPetMarker(pet) {
         case 'rabbit': iconEmoji = '🐰'; break;
         default: iconEmoji = '🐾'; break;
     }
-    
-    const marker = L.marker([pet.lat, pet.lng], {
+
+    // ✅ Create a key based on coordinates
+    const coordKey = `${pet.lat.toFixed(4)}_${pet.lng.toFixed(4)}`;
+
+    // ✅ Track how many pets share this coordinate
+    if (!locationCount[coordKey]) {
+        locationCount[coordKey] = 0;
+    }
+    const index = locationCount[coordKey];
+    locationCount[coordKey]++;
+
+    // ✅ Spread pets in a circle if they share the same location
+    let lat = pet.lat;
+    let lng = pet.lng;
+
+    if (index > 0) {
+        // Spread in a circle around the original point
+        const angle = (index * 137.5) * (Math.PI / 180); // Golden angle for even spread
+        const radius = 0.0015 * Math.ceil(index / 8); // Increase radius for more pets
+        lat = pet.lat + radius * Math.cos(angle);
+        lng = pet.lng + radius * Math.sin(angle);
+    }
+
+    const marker = L.marker([lat, lng], {
         icon: L.divIcon({
             className: 'pet-marker',
-            html: `<div style="background-color: ${petColors[pet.type] || petColors.other}; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 16px;">${iconEmoji}</div>`,
+            html: `<div style="background-color: ${petColors[pet.type] || petColors.other}; 
+                        width: 30px; height: 30px; border-radius: 50%; 
+                        border: 3px solid white; 
+                        box-shadow: 0 2px 5px rgba(0,0,0,0.3); 
+                        display: flex; align-items: center; 
+                        justify-content: center; font-size: 16px;">${iconEmoji}</div>`,
             iconSize: [36, 36],
             iconAnchor: [18, 18]
         })
     }).addTo(map);
 
-    // Add click event to marker to directly open modal
     marker.on('click', function() {
         showPetModal(pet.id);
+    });
+
+    // ✅ Add a tooltip showing pet name on hover
+    marker.bindTooltip(pet.name, {
+        permanent: false,
+        direction: 'top',
+        offset: [0, -18]
     });
 
     petMarkers.push(marker);
 }
 
+// ✅ Reset location count when clearing markers
 function clearPetMarkers() {
     petMarkers.forEach(marker => {
         map.removeLayer(marker);
     });
     petMarkers = [];
+
+    // Reset the location counter
+    Object.keys(locationCount).forEach(key => delete locationCount[key]);
 }
 
 // FIXED: This is the main function that was causing the issue
@@ -1020,6 +1061,9 @@ async function searchPetsInArea(lat, lng, radius, petType) {
         data.pets.forEach(pet => {
             addPetMarker(pet);
         });
+
+        // ✅ Update allPets with search results so modal can find them
+allPets = data.pets;
         
         // Show results message
         const petTypeText = petType === 'all' ? 'pets' : `${petType}s`;
@@ -1224,5 +1268,98 @@ window.searchPetsByLocation = searchPets;
 
 console.log('Pet map JavaScript loaded successfully');
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+<script>
+    function openAdoptionFromMap(pk) {
+        // Close the pet detail modal first
+        closePetModal();
+
+        var url = "{% url 'adopt_pet' 12345 %}".replace('12345', pk);
+        $.ajax({
+            type: 'GET',
+            url: url,
+            success: function(data) {
+                // Create adoption modal dynamically if it doesn't exist
+                var existingModal = document.getElementById('map-adoption-modal');
+                if (!existingModal) {
+                    var modalHtml = `
+                        <div id="map-adoption-modal" style="display:none; position:fixed; z-index:99999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center;">
+                            <div style="background:white; padding:25px; border-radius:10px; width:80%; max-width:700px; max-height:90vh; overflow-y:auto; box-shadow:0 4px 10px rgba(0,0,0,0.2); position:relative;">
+                                <span style="position:absolute; top:15px; right:20px; font-size:24px; font-weight:bold; cursor:pointer; color:#666;" onclick="closeMapAdoptionModal()">&times;</span>
+                                <div id="map-adoption-form-container"></div>
+                            </div>
+                        </div>`;
+                    document.body.insertAdjacentHTML('beforeend', modalHtml);
+                }
+
+                document.getElementById('map-adoption-form-container').innerHTML = data;
+                document.getElementById('map-adoption-modal').style.display = 'flex';
+
+                // Handle form submission
+                $('#map-adoption-form-container form').on('submit', function(e) {
+                    e.preventDefault();
+
+                    var submitBtn = $(this).find('[type=submit]');
+                    submitBtn.prop('disabled', true);
+                    submitBtn.html('<i class="fas fa-spinner fa-spin"></i> Submitting...');
+
+                    var formData = new FormData(this);
+                    var submitUrl = $(this).attr('action') || url;
+
+                    $.ajax({
+                        type: 'POST',
+                        url: submitUrl,
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function(response) {
+                            closeMapAdoptionModal();
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Adoption Request Sent!',
+                                text: 'Your adoption request has been submitted successfully. We will notify you once it is reviewed.',
+                                confirmButtonText: 'OK',
+                                confirmButtonColor: '#3498db',
+                            }).then(function() {
+                                window.location.href = "{% url 'homepage' %}";
+                            });
+                        },
+                        error: function(xhr, status, error) {
+                            submitBtn.prop('disabled', false);
+                            submitBtn.html('Submit');
+                            document.getElementById('map-adoption-form-container').innerHTML = xhr.responseText;
+                            console.error("Error submitting adoption form:", error);
+                        }
+                    });
+                });
+            },
+            error: function(xhr, status, error) {
+                console.error("Error fetching adoption form:", error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops!',
+                    text: 'Could not load the adoption form. Please try again.',
+                    confirmButtonColor: '#e74c3c',
+                });
+            }
+        });
+    }
+
+    function closeMapAdoptionModal() {
+        var modal = document.getElementById('map-adoption-modal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+    // Close adoption modal when clicking backdrop
+    document.addEventListener('click', function(event) {
+        var modal = document.getElementById('map-adoption-modal');
+        if (modal && event.target === modal) {
+            closeMapAdoptionModal();
+        }
+    });
+</script>
 {% endblock %}
