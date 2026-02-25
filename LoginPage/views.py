@@ -838,17 +838,15 @@ def user_login(request):
 @login_required
 def homepage(request):
     username = request.user.username if request.user.is_authenticated else None
-    notifications = Notification.objects.filter(user=request.user, is_read=False)  # Get unread notifications
-    notifications_count = notifications.count()  # Count unread notifications
-
-    # Get approved pets for the homepage (you can choose to paginate or not)
-    pets = get_approved_pets()  # You can pass a page number if needed
+    notifications = Notification.objects.filter(user=request.user, is_read=False)
+    notifications_count = notifications.count()
+    pets = get_approved_pets()
 
     return render(request, 'homepage.html', {
         'username': username,
         'notifications': notifications,
         'notifications_count': notifications_count,
-        'pets': pets,  # Pass the pets to the homepage context
+        'pets': pets,
     })
 
 def get_approved_pets(page_number=None):
