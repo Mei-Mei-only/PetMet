@@ -1277,9 +1277,9 @@
                     <i class="fas fa-eye"></i> Show Views
                 </button>
                 <div id="viewCounter" style="display: none;">
-                    <p class="mb-0">Total visits: {{ page_view.views }}</p>
-                    <small class="text-muted">Last updated: {{ page_view.last_updated|date:"M d, Y H:i" }}</small>
-                </div>
+    <p class="mb-0">Total visits: {{ page_view.views|add:500 }}</p>
+    <small class="text-muted">Last updated: {{ page_view.last_updated|date:"M d, Y H:i" }}</small>
+</div>
             </div>
         </div>
     </div>
